@@ -3,11 +3,7 @@
     <h1>Formulario de pagos</h1>
 
     <vue-form :state="formState" @submit.prevent="enviar()">
-      <!-- --------------------- -->
-      <!--     Campo nombre      -->
-      <!-- --------------------- -->
       <validate tag="div">
-        <!-- Elemento de entrada -->
         <label for="nombre">Nombre</label>
         <input
           type="text"
@@ -32,7 +28,6 @@
       <br />
 
       <validate tag="div">
-        <!-- Elemento de entrada -->
         <label for="documento">Nro de documento</label>
         <input
           type="number"
@@ -58,9 +53,8 @@
           </div>
         </field-messages>
       </validate>
-      <br>
+      <br />
       <validate tag="div">
-        <!-- Elemento de entrada -->
         <label for="monto">Monto a pagar</label>
         <input
           type="number"
@@ -70,7 +64,7 @@
           autocomplete="off"
           v-model.trim="formData.monto"
           required
-          :min = "minimoMonto"
+          :min="minimoMonto"
         />
 
         <field-messages name="monto" show="$dirty">
@@ -82,9 +76,8 @@
           </div>
         </field-messages>
       </validate>
-       <br>
+      <br />
       <validate tag="div">
-        <!-- Elemento de entrada -->
         <label for="pago">Pago</label>
         <input
           type="number"
@@ -92,27 +85,66 @@
           name="pago"
           class="form-control"
           autocomplete="off"
-          v-model.trim="formData.Pago"
+          v-model.trim="formData.pago"
           required
-          :min = "minimoMonto"
+          :min="minimoMonto"
         />
 
         <field-messages name="pago" show="$dirty">
           <div slot="required" class="alert alert-danger mt-1">
             Campo requerido
           </div>
-          <div slot="min" class="alert alert-danger mt-1">
-             No puede pagar menos que {{ minimoMonto }}.
-            <div v-if="this.pagoMin < this.formData.monto">
-               No puede pagar menos que lo que adeuca {{ pagoMin }}.
-            </div>
-           
+          <div
+            v-if="this.formData.pago < this.minimoMonto"
+            slot="min"
+            class="alert alert-danger mt-1"
+          >
+            No puede pagar menos que {{ minimoMonto }}.
+          </div>
+          <div
+            v-if="Number(this.formData.pago) < Number(this.formData.monto)"
+            class="alert alert-danger mt-1"
+          >
+            No puede pagar menos que lo que adeuda {{ this.formData.monto }}.
           </div>
         </field-messages>
       </validate>
       <button class="btn btn-success my-4" :disabled="formState.$invalid">
         Enviar
       </button>
+
+      <table class="table table-dark">
+        <thead>
+          <tr>
+            <th>Nom</th>
+            <th>Dni</th>
+            <th>a pagar</th>
+            <th>pagado</th>
+            <th>fecha</th>
+            <th>Saldo deuda</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            v-for="(reg, index) in this.registros"
+            :key="index"
+            :style="{ background: getCol(reg) }"
+          >
+            <td>{{ reg.nombre }}</td>
+            <td>{{ reg.documento }}</td>
+            <td>{{ reg.monto }}</td>
+            <td>{{ reg.pago }}</td>
+            <td>{{ reg.fecha }}</td>
+            <td>{{ reg.pago - reg.monto }}</td>
+          </tr>
+          <tr>
+            <td>{{ this.formData.nombre }}</td>
+            <td>{{ this.formData.documento }}</td>
+            <td>{{ this.formData.monto }}</td>
+            <td>{{ this.formData.pago }}</td>
+          </tr>
+        </tbody>
+      </table>
     </vue-form>
   </section>
 </template>
@@ -130,6 +162,7 @@ export default {
       minimoMonto: 0,
       formState: {},
       formData: this.getInicialData(),
+      registros: [],
     };
   },
   methods: {
@@ -142,8 +175,22 @@ export default {
       };
     },
     enviar() {
+      var fechaHora = new Date().toLocaleDateString();
+      this.formData.fecha = fechaHora;
+      this.registros.push(this.formData);
       this.formData = this.getInicialData();
       this.formState._reset();
+    },
+    getCol(regis) {
+      var col;
+      if (regis.pago - regis.monto > 0) {
+        col = "blue";
+      } else if (regis.pago - regis.monto == 0) {
+        col = "green";
+      } else {
+        col = "red";
+      }
+      return col;
     },
   },
   computed: {},
