@@ -112,8 +112,10 @@
       <button class="btn btn-success my-4" :disabled="formState.$invalid">
         Enviar
       </button>
-
-      <table class="table table-dark">
+ </vue-form>
+ <button :class="mostrarTabla ? 'btn btn-danger' : 'btn btn-primary'" @click="verTabla()">{{mostrarTabla?'ocultar':'mostrar'}}</button>
+      <table v-show="mostrarTabla" class="table table-dark"> <!-- aca cambia el display de block a none -->
+      <!-- <table v-if="mostrarTabla" class="table table-dark"> aca aparece o desaparece la tabla-->
         <thead>
           <tr>
             <th>Nom</th>
@@ -145,7 +147,7 @@
           </tr>
         </tbody>
       </table>
-    </vue-form>
+   
   </section>
 </template>
 
@@ -163,9 +165,13 @@ export default {
       formState: {},
       formData: this.getInicialData(),
       registros: [],
+      mostrarTabla : false
     };
   },
   methods: {
+    verTabla(){
+      this.mostrarTabla = !this.mostrarTabla
+    },
     getInicialData() {
       return {
         nombre: "",
